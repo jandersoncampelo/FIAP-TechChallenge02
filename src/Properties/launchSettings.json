@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "FIAP_TechChallenge02": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7001",
+      "launchBrowser": false
+    }
+  }
+}
