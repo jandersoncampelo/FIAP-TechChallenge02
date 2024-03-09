@@ -20,19 +20,19 @@ namespace Purchase.OrderApproval
             logger.LogInformation("Iniciando Processamento do pedido");
             
             // Etapa 1: Verificar estoque
-            var statusEstoque = await context.CallActivityAsync<bool>(nameof(StockCheckFunction), order);
+            await context.CallActivityAsync<bool>(nameof(StockCheckFunction), order);
 
             // Etapa 2: Confirmar pagamento
-            var pagamentoConfirmado = await context.CallActivityAsync<bool>(nameof(PaymentConfirmFunction), order);
+            await context.CallActivityAsync<bool>(nameof(PaymentConfirmFunction), order);
 
             // Etapa 3: Faturar o pedido
-            var pedidoFaturado = await context.CallActivityAsync<bool>(nameof(InvoiceOrderFunction), order);
+            await context.CallActivityAsync<bool>(nameof(InvoiceOrderFunction), order);
 
             // Etapa 4: Despachar produto
-            var produtoDespachado = await context.CallActivityAsync<bool>(nameof(DispatchProductFunction), order);
+            await context.CallActivityAsync<bool>(nameof(DispatchProductFunction), order);
         }
 
-        [Function("OrderApprovalDurableFunctions_HttpStart")]
+        [Function("OrderApprovalStart")]
         public static async Task<HttpResponseData> HttpStart(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req,
             [DurableClient] DurableTaskClient client,
@@ -50,8 +50,10 @@ namespace Purchase.OrderApproval
 
             //var result =  await client.CreateCheckStatusResponse(req, instanceId);
 
-            var response = req.CreateResponse(HttpStatusCode.Created);
-
+            // Return message to the client Pedido Criado
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "application/json");
+            await response.WriteStringAsync(JsonConvert.SerializeObject(new { message = "Pedido Enviado para Aprovação!", instanceId }));
             return response;
         }
     }
